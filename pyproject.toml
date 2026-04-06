@@ -1,0 +1,26 @@
+[project]
+name = "prison_dilemma_agents"
+version = "0.1.0"
+description = "prison-dilemma-agents using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]==1.13.0",
+    "pydantic>=2.11.10",
+    "python-dotenv>=1.1.1",
+]
+
+[project.scripts]
+prison_dilemma_agents = "prison_dilemma_agents.main:run"
+run_crew = "prison_dilemma_agents.main:run"
+train = "prison_dilemma_agents.main:train"
+replay = "prison_dilemma_agents.main:replay"
+test = "prison_dilemma_agents.main:test"
+run_with_trigger = "prison_dilemma_agents.main:run_with_trigger"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
