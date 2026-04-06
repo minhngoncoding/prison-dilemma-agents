@@ -17,7 +17,7 @@ class Player:
 
 @dataclass
 class RoundResult:
-    decisions_dict: dict[str, Decision]
+    decisions: dict[str, Decision]
     payoffs: dict[str, int]
     round_number: int = 0
 
