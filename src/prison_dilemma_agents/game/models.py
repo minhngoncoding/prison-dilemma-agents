@@ -10,16 +10,16 @@ class Decision(Enum):
 
 @dataclass
 class Player:
-    id: str
+    player_id: str
     name: str
     score: int = 0
 
 
 @dataclass
 class RoundResult:
-    round_number: int = 0
     decisions_dict: dict[str, Decision]
     payoffs: dict[str, int]
+    round_number: int = 0
 
 
 @dataclass
@@ -44,17 +44,15 @@ class PayoffMatrix:
     DD = 1  # (defect, defect)
 
     @classmethod
-    def get_payoff(
-        cls, my_decision: Decision, opponent_decision: Decision
-    ) -> tuple[int, int]:
+    def get_payoff(cls, my_decision: Decision, opponent_decision: Decision) -> int:
         if (
             my_decision == Decision.COOPERATE
             and opponent_decision == Decision.COOPERATE
         ):
-            return (cls.CC, cls.CC)
+            return cls.CC
         elif my_decision == Decision.COOPERATE and opponent_decision == Decision.BETRAY:
-            return (cls.CD, cls.DC)
+            return cls.CD
         elif my_decision == Decision.BETRAY and opponent_decision == Decision.COOPERATE:
-            return (cls.DC, cls.CD)
+            return cls.DC
         else:
-            return (cls.DD, cls.DD)
+            return cls.DD
