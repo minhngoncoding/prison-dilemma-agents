@@ -1,63 +1,262 @@
-from crewai import Agent, Crew, Process, Task
+import os
+from pathlib import Path
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.agents.agent_builder.base_agent import BaseAgent
-# If you want to run a snippet of code before or after the crew starts,
-# you can use the @before_kickoff and @after_kickoff decorators
-# https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+
+
+# Get the config directory relative to this file
+CONFIG_DIR = Path(__file__).parent / "config"
+
+
+def get_llm():
+    """Get LLM configuration - supports OpenAI, Ollama, or other providers."""
+    base_url = os.getenv("OLLAMA_BASE_URL", "")
+    model = os.getenv("MODEL", "gpt-4o-mini")
+
+    if base_url:
+        return LLM(
+            model=model,
+            base_url=base_url,
+            api_key="not-needed",
+        )
+    else:
+        return LLM(model=model)
+
 
 @CrewBase
-class PrisonDilemmaAgents():
-    """PrisonDilemmaAgents crew"""
+class PrisonDilemmaCrew:
+    """Prisoner's Dilemma Game Crew - orchestrates game with commentary."""
 
-    agents: list[BaseAgent]
-    tasks: list[Task]
+    agents_config = str(CONFIG_DIR / "agents.yaml")
+    tasks_config = str(CONFIG_DIR / "tasks.yaml")
 
-    # Learn more about YAML configuration files here:
-    # Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
-    # Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
-    
-    # If you would like to add tools to your agents, you can learn more about it here:
-    # https://docs.crewai.com/concepts/agents#agent-tools
     @agent
-    def researcher(self) -> Agent:
+    def game_manager(self) -> Agent:
         return Agent(
-            config=self.agents_config['researcher'], # type: ignore[index]
-            verbose=True
+            config=self.agents_config["game_manager"],
+            llm=get_llm(),
+            verbose=True,
         )
 
     @agent
-    def reporting_analyst(self) -> Agent:
+    def strategy_analyst(self) -> Agent:
         return Agent(
-            config=self.agents_config['reporting_analyst'], # type: ignore[index]
-            verbose=True
+            config=self.agents_config["strategy_analyst"],
+            llm=get_llm(),
+            verbose=True,
         )
 
-    # To learn more about structured task outputs,
-    # task dependencies, and task callbacks, check out the documentation:
-    # https://docs.crewai.com/concepts/tasks#overview-of-a-task
-    @task
-    def research_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['research_task'], # type: ignore[index]
+    @agent
+    def score_tracker(self) -> Agent:
+        return Agent(
+            config=self.agents_config["score_tracker"],
+            llm=get_llm(),
+            verbose=True,
+        )
+
+    @agent
+    def narrator(self) -> Agent:
+        return Agent(
+            config=self.agents_config["narrator"],
+            llm=get_llm(),
+            verbose=True,
+        )
+
+    @agent
+    def llm_player_1(self) -> Agent:
+        return Agent(
+            config=self.agents_config["llm_player_1"],
+            llm=get_llm(),
+            verbose=True,
+        )
+
+    @agent
+    def llm_player_2(self) -> Agent:
+        return Agent(
+            config=self.agents_config["llm_player_2"],
+            llm=get_llm(),
+            verbose=True,
+        )
+
+    @agent
+    def always_cooperate(self) -> Agent:
+        return Agent(
+            config=self.agents_config["always_cooperate"],
+            verbose=True,
+        )
+
+    @agent
+    def always_betray(self) -> Agent:
+        return Agent(
+            config=self.agents_config["always_betray"],
+            verbose=True,
+        )
+
+    @agent
+    def random_player(self) -> Agent:
+        return Agent(
+            config=self.agents_config["random_player"],
+            verbose=True,
+        )
+
+    @agent
+    def tit_for_tat(self) -> Agent:
+        return Agent(
+            config=self.agents_config["tit_for_tat"],
+            verbose=True,
+        )
+
+    @agent
+    def tit_for_two_tats(self) -> Agent:
+        return Agent(
+            config=self.agents_config["tit_for_two_tats"],
+            verbose=True,
+        )
+
+    @agent
+    def two_tits_for_tat(self) -> Agent:
+        return Agent(
+            config=self.agents_config["two_tits_for_tat"],
+            verbose=True,
+        )
+
+    @agent
+    def grudger(self) -> Agent:
+        return Agent(
+            config=self.agents_config["grudger"],
+            verbose=True,
+        )
+
+    @agent
+    def aggressive(self) -> Agent:
+        return Agent(
+            config=self.agents_config["aggressive"],
+            verbose=True,
+        )
+
+    @agent
+    def adaptive(self) -> Agent:
+        return Agent(
+            config=self.agents_config["adaptive"],
+            verbose=True,
+        )
+
+    @agent
+    def optimizer(self) -> Agent:
+        return Agent(
+            config=self.agents_config["optimizer"],
+            verbose=True,
+        )
+
+    @agent
+    def probabilistic_cooperator(self) -> Agent:
+        return Agent(
+            config=self.agents_config["probabilistic_cooperator"],
+            verbose=True,
+        )
+
+    @agent
+    def signaler(self) -> Agent:
+        return Agent(
+            config=self.agents_config["signaler"],
+            verbose=True,
         )
 
     @task
-    def reporting_task(self) -> Task:
+    def initialize_game(self) -> Task:
         return Task(
-            config=self.tasks_config['reporting_task'], # type: ignore[index]
-            output_file='report.md'
+            config=self.tasks_config["initialize_game"],
+        )
+
+    @task
+    def collect_decisions(self) -> Task:
+        return Task(
+            config=self.tasks_config["collect_decisions"],
+        )
+
+    @task
+    def analyze_round_result(self) -> Task:
+        return Task(
+            config=self.tasks_config["analyze_round_result"],
+        )
+
+    @task
+    def update_scores(self) -> Task:
+        return Task(
+            config=self.tasks_config["update_scores"],
+        )
+
+    @task
+    def generate_round_narrative(self) -> Task:
+        return Task(
+            config=self.tasks_config["generate_round_narrative"],
+        )
+
+    @task
+    def check_game_end(self) -> Task:
+        return Task(
+            config=self.tasks_config["check_game_end"],
+        )
+
+    @task
+    def generate_final_report(self) -> Task:
+        return Task(
+            config=self.tasks_config["generate_final_report"],
+        )
+
+    @task
+    def generate_tournament_summary(self) -> Task:
+        return Task(
+            config=self.tasks_config["generate_tournament_summary"],
         )
 
     @crew
     def crew(self) -> Crew:
-        """Creates the PrisonDilemmaAgents crew"""
-        # To learn how to add knowledge sources to your crew, check out the documentation:
-        # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
-
+        """Creates the Prisoner's Dilemma Game Crew."""
         return Crew(
-            agents=self.agents, # Automatically created by the @agent decorator
-            tasks=self.tasks, # Automatically created by the @task decorator
+            agents=self.agents,  # Automatically assembled from @agent decorators
+            tasks=self.tasks,  # Automatically assembled from @task decorators
             process=Process.sequential,
             verbose=True,
-            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )
+
+    @staticmethod
+    def get_player_agent(strategy_name: str) -> str:
+        """Get agent key for a given strategy name."""
+        strategy_map = {
+            "always_cooperate": "always_cooperate",
+            "always_betray": "always_betray",
+            "random": "random_player",
+            "tit_for_tat": "tit_for_tat",
+            "tit_for_two_tats": "tit_for_two_tats",
+            "two_tits_for_tat": "two_tits_for_tat",
+            "grudger": "grudger",
+            "aggressive": "aggressive",
+            "adaptive": "adaptive",
+            "optimizer": "optimizer",
+            "probabilistic_cooperator": "probabilistic_cooperator",
+            "signaler": "signaler",
+            "llm_player_1": "llm_player_1",
+            "llm_player_2": "llm_player_2",
+        }
+        return strategy_map.get(strategy_name.lower(), "always_cooperate")
+
+    @staticmethod
+    def list_available_strategies() -> list[str]:
+        """List all available player strategies."""
+        return [
+            "always_cooperate",
+            "always_betray",
+            "random",
+            "tit_for_tat",
+            "tit_for_two_tats",
+            "two_tits_for_tat",
+            "grudger",
+            "aggressive",
+            "adaptive",
+            "optimizer",
+            "probabilistic_cooperator",
+            "signaler",
+            "llm_player_1",
+            "llm_player_2",
+        ]
