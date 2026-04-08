@@ -1,13 +1,3 @@
-# ============================================================================
-# PRISONER'S DILEMMA GAME ORCHESTRATION AGENTS
-# ============================================================================
-# These agents handle game management, analysis, and commentary.
-# They work together to orchestrate fair and entertaining games.
-
-# --------------------------------------------------------------------------
-# GAME MANAGEMENT AGENTS
-# --------------------------------------------------------------------------
-
 game_manager:
   role: >
     Prisoner's Dilemma Game Manager
@@ -26,9 +16,6 @@ game_manager:
   # Optional: specify a specific model for this agent
   # llm: openai/gpt-4o
 
-# --------------------------------------------------------------------------
-# ANALYSIS AGENTS
-# --------------------------------------------------------------------------
 
 strategy_analyst:
   role: >
@@ -60,9 +47,6 @@ score_tracker:
   verbose: true
   max_rpm: 10
 
-# --------------------------------------------------------------------------
-# NARRATIVE AGENTS
-# --------------------------------------------------------------------------
 
 narrator:
   role: >
@@ -121,11 +105,6 @@ llm_player_2:
   allow_delegation: false
   max_iter: 5
 
-# ============================================================================
-# PLAYER STRATEGY AGENTS (Rule-based decision makers)
-# ============================================================================
-# These agents use predefined strategies - no LLM reasoning needed.
-# They are faster and cheaper for testing game mechanics.
 
 always_cooperate:
   role: >
