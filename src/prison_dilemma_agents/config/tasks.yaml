@@ -1,0 +1,290 @@
+# ============================================================================
+# PRISONER'S DILEMMA GAME ORCHESTRATION TASKS
+# ============================================================================
+# These tasks define the workflow for running a complete game session.
+# Tasks are executed sequentially with dependencies managed via 'context'.
+
+# --------------------------------------------------------------------------
+# GAME INITIALIZATION TASKS
+# --------------------------------------------------------------------------
+
+initialize_game:
+  description: >
+    Initialize a new prisoner's dilemma game session with the following setup:
+    
+    - Create game state with specified players
+    - Set the number of rounds to play (default: 20)
+    - Confirm the payoff matrix:
+      * Both Cooperate (CC): Both get 3 points
+      * Cooperate/Defect (CD): Defector gets 5, Cooperator gets 0
+      * Defect/Cooperate (DC): Cooperator gets 0, Defector gets 5
+      * Both Defect (DD): Both get 1 point
+    
+    - Verify all players are ready
+    - Announce the game beginning with fanfare
+    
+    Parameters to use:
+    - player_1_name: Name of first player
+    - player_2_name: Name of second player
+    - number_of_rounds: Total rounds (default: 20)
+    - player_1_type: "human", "simple", or "llm"
+    - player_2_type: "human", "simple", or "llm"
+  expected_output: >
+    A dramatic game opening announcement containing:
+    - Game ID and timestamp
+    - Player names and their types (strategy)
+    - Number of rounds to be played
+    - Payoff matrix reminder
+    - "Let the game begin!" style closing
+  agent: game_manager
+  output_file: game_initialization.md
+  markdown: true
+
+# --------------------------------------------------------------------------
+# ROUND EXECUTION TASKS
+# --------------------------------------------------------------------------
+
+collect_decisions:
+  description: >
+    Collect decisions from all active players for the current round.
+    
+    IMPORTANT: Players must decide simultaneously - they cannot see each
+    other's current decision. Each player receives:
+    
+    1. Their current cumulative score
+    2. Their opponent's last move (if this is not round 1)
+    3. Full round history with all past decisions
+    4. Payoff matrix for reference
+    
+    For human players, wait for input. For simple bots, execute their
+    predetermined strategy. For LLM players, prompt their agent to decide.
+    
+    Store all decisions securely until all are collected.
+  expected_output: >
+    A dictionary mapping each player_id to their decision:
+    {
+      "player_1_id": {
+        "decision": "COOPERATE" or "BETRAY",
+        "player_name": "Alice",
+        "reasoning": "brief explanation"
+      },
+      "player_2_id": {
+        "decision": "COOPERATE" or "BETRAY", 
+        "player_name": "Bob",
+        "reasoning": "brief explanation"
+      }
+    }
+  agent: game_manager
+
+analyze_round_result:
+  description: >
+    Analyze the completed round's results with deep strategic insight.
+    
+    For this round, determine and explain:
+    
+    1. DECISIONS MADE
+       - What each player chose (COOPERATE or BETRAY)
+       - Brief reasoning from each player (if available)
+    
+    2. PAYOFFS AWARDED
+       - Calculate points using the payoff matrix:
+         * CC = 3 each
+         * CD = 5 to defector, 0 to cooperator
+         * DC = 5 to defector, 0 to cooperator
+         * DD = 1 each
+    
+    3. STRATEGIC ANALYSIS
+       - Is this result surprising? Why or why not?
+       - What patterns are emerging?
+       - Any shifts from previous rounds?
+       - What does this reveal about each player's strategy?
+    
+    4. PSYCHOLOGICAL MOMENT
+       - What's happening in the minds of the players?
+       - Trust levels, tensions, rivalry dynamics?
+  expected_output: >
+    A comprehensive round analysis report with:
+    - Round number
+    - All decisions with brief reasoning
+    - Payoffs awarded this round
+    - Cumulative scores
+    - Strategic observations (2-3 sentences)
+    - Brief psychological commentary (1-2 sentences)
+  agent: strategy_analyst
+  context: [collect_decisions]
+  markdown: true
+
+# --------------------------------------------------------------------------
+# SCORE TRACKING TASKS
+# --------------------------------------------------------------------------
+
+update_scores:
+  description: >
+    Update the official scoreboard after the completed round.
+    
+    Calculate and report:
+    
+    1. POINTS EARNED THIS ROUND
+       - Player 1: X points
+       - Player 2: Y points
+    
+    2. CUMULATIVE TOTALS
+       - Player 1 total: A points
+       - Player 2 total: B points
+    
+    3. SCORE DIFFERENTIAL
+       - Who is ahead and by how much?
+       - Is it a close game or a blowout?
+    
+    4. PROJECTION
+       - If the game ended now, who would win?
+       - How many rounds remain?
+       - What needs to happen for each player to win?
+    
+    5. GAME MOMENTUM
+       - Which player has momentum?
+       - Are there any trends (one player winning more recently)?
+  expected_output: >
+    A formatted scoreboard update containing:
+    - Round-by-round points earned
+    - Running totals
+    - Point differential
+    - Winner projection
+    - Momentum assessment
+    Format as a clear table with narrative summary.
+  agent: score_tracker
+  context: [analyze_round_result]
+  markdown: true
+
+# --------------------------------------------------------------------------
+# NARRATIVE TASKS
+# --------------------------------------------------------------------------
+
+generate_round_narrative:
+  description: >
+    Create an engaging, dramatic narrative for the completed round.
+    
+    Your job is to make this round feel important and exciting.
+    
+    Consider:
+    - The psychological dynamic between players
+    - How their history influences current decisions
+    - What stakes are at play
+    - Drama and tension building
+    - Surprise elements (if any)
+    
+    Tone should be like a sports commentator calling a crucial moment.
+    Be engaging but accurate. Make readers feel the tension.
+    
+    Keep it to 2-4 sentences - punchy and dramatic.
+  expected_output: >
+    A 2-4 sentence dramatic narrative that:
+    - Sets the scene and stakes
+    - Describes what happened
+    - Hints at the psychological dimension
+    - Creates anticipation for what's next
+  agent: narrator
+  context: [analyze_round_result]
+  markdown: false
+
+# --------------------------------------------------------------------------
+# GAME STATE TASKS
+# --------------------------------------------------------------------------
+
+check_game_end:
+  description: >
+    Determine if the game should continue or has reached its conclusion.
+    
+    Check:
+    1. Current round number vs. maximum rounds
+    2. Is there a mathematically impossible comeback scenario?
+    3. Any special end conditions triggered?
+    4. Player concession or forfeit?
+    
+    If game should continue, confirm how many rounds remain.
+    If game is over, prepare for final summary.
+  expected_output: >
+    Game status update:
+    {
+      "status": "CONTINUE" or "END_GAME",
+      "current_round": N,
+      "max_rounds": M,
+      "rounds_remaining": K,
+      "reason": "explanation"
+    }
+  agent: game_manager
+  context: [update_scores]
+
+# --------------------------------------------------------------------------
+# FINAL REPORTING TASKS
+# --------------------------------------------------------------------------
+
+generate_final_report:
+  description: >
+    Create a comprehensive end-of-game report summarizing everything.
+    
+    This is the grand finale - make it count!
+    
+    Include:
+    
+    1. GAME SUMMARY
+       - Total rounds played
+       - Final scores
+       - Winner declaration (or draw)
+       - MVP moments from the game
+    
+    2. STATISTICS
+       - Cooperation rate for each player (%)
+       - Defection rate for each player (%)
+       - Who started more rounds as the aggressor?
+       - Biggest single-round swing
+       - Most common outcome (CC, CD, DC, DD)
+    
+    3. STRATEGIC ANALYSIS
+       - What strategy did each player appear to use?
+       - Key turning points in the game
+       - What worked well? What didn't?
+       - How well did they adapt to each other?
+    
+    4. HISTORICAL CONTEXT
+       - How does this compare to typical PD outcomes?
+       - Notable moments or surprises
+       - Memorable quotes or decisions
+    
+    5. FINAL VERDICT
+       - Winner celebration
+       - Loser acknowledgment (sportsmanship)
+       - What could they do differently next time?
+  expected_output: >
+    A comprehensive markdown report with:
+    - Executive summary (3 sentences)
+    - Detailed statistics (tables)
+    - Strategic analysis prose
+    - Memorable moments
+    - Final rankings
+    - Looking ahead (what's next)
+  agent: game_manager
+  context: [check_game_end, update_scores, analyze_round_result]
+  output_file: game_final_report.md
+  markdown: true
+
+generate_tournament_summary:
+  description: >
+    Create a polished summary suitable for display in a leaderboard
+    or tournament bracket. This is the "official record" of the game.
+    
+    Include:
+    - Game result in one line
+    - Final scores prominently displayed
+    - Key stats (cooperation %, biggest play)
+    - Strategy tags (e.g., "Aggressive", "Cooperative", "Adaptive")
+  expected_output: >
+    A clean, display-ready summary containing:
+    - Winner name and final score
+    - Loser name and final score
+    - Key statistics in bullet points
+    - Strategy classification for each player
+  agent: score_tracker
+  context: [generate_final_report]
+  output_file: tournament_summary.md
+  markdown: true
